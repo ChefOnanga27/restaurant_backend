@@ -1,47 +1,74 @@
-import bcrypt from 'bcrypt';
-import { createUser, findUserByEmail} from '../models/usersModel.js';
+import db from '../config/db.js'; // Importez votre fichier de connexion DB
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
-// Créer un nouvel utilisateur
-export const registerUser = async (req, res) => {
+// Enregistrement d'un nouvel utilisateur
+export const register = (req, res) => {
   const { username, email, password } = req.body;
 
-  try {
-    // Vérifier si l'utilisateur existe déjà
-    const existingUser = await findUserByEmail(email);
-    if (existingUser) {
-      return res.status(400).json({ message: 'Email déjà utilisé.' });
+  // Vérification des données d'entrée
+  if (!username || !email || !password) {
+    return res.status(400).json({ message: 'Tous les champs sont obligatoires.' });
+  }
+
+  // Hachage du mot de passe
+  bcrypt.hash(password, 10, (err, hashedPassword) => {
+    if (err) {
+      console.error('Erreur de hachage du mot de passe :', err);
+      return res.status(500).json({ message: 'Erreur de hachage du mot de passe.' });
     }
 
-    // Hachage du mot de passe
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Requête pour insérer l'utilisateur dans la base de données
+    const query = 'INSERT INTO users (username, email, password) VALUES (?, ?, ?)';
+    db.query(query, [username, email, hashedPassword], (err, results) => {
+      if (err) {
+        console.error('Erreur lors de l\'inscription :', err);
+        return res.status(500).json({ message: 'Erreur lors de l\'inscription.' });
+      }
 
-    // Créer l'utilisateur
-    const userId = await createUser(username, email, hashedPassword);
-    res.status(201).json({ message: 'Utilisateur créé avec succès', userId });
-  } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la création de l\'utilisateur', error });
-  }
+      res.status(201).json({ message: 'Utilisateur créé avec succès.' });
+    });
+  });
 };
 
 // Connexion d'un utilisateur
-export const loginUser = async (req, res) => {
+export const login = (req, res) => {
   const { email, password } = req.body;
 
-  try {
-    const user = await findUserByEmail(email);
-    if (!user) {
+  // Vérification des données d'entrée
+  if (!email || !password) {
+    return res.status(400).json({ message: 'L\'email et le mot de passe sont requis.' });
+  }
+
+  // Recherche de l'utilisateur par son email
+  const query = 'SELECT * FROM users WHERE email = ?';
+  db.query(query, [email], (err, results) => {
+    if (err) {
+      console.error('Erreur serveur :', err);
+      return res.status(500).json({ message: 'Erreur serveur.' });
+    }
+
+    if (results.length === 0) {
       return res.status(404).json({ message: 'Utilisateur non trouvé.' });
     }
 
-    // Vérifier le mot de passe
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Mot de passe incorrect.' });
-    }
+    const user = results[0]; // L'utilisateur trouvé
 
-    // Connexion réussie
-    res.status(200).json({ message: 'Connexion réussie', userId: user.id });
-  } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la connexion', error });
-  }
+    // Comparaison des mots de passe
+    bcrypt.compare(password, user.password, (err, isMatch) => {
+      if (err) {
+        console.error('Erreur lors de la comparaison des mots de passe :', err);
+        return res.status(500).json({ message: 'Erreur lors de la comparaison des mots de passe.' });
+      }
+
+      if (!isMatch) {
+        return res.status(400).json({ message: 'Mot de passe incorrect.' });
+      }
+
+      // Génération du JWT si la connexion réussie
+      const token = jwt.sign({ userId: user.id }, 'votre_clé_secrète', { expiresIn: '1h' });
+
+      res.status(200).json({ message: 'Connexion réussie.', token });
+    });
+  });
 };

@@ -1,17 +1,21 @@
 import express from 'express';
-import db from './config/db.js';
-import dotenv from 'dotenv'
+import dotenv from 'dotenv';
+import router from './routes/usersRoutes.js';
+import recetteRoutes from './routes/recetteRoutes.js'
+import bodyParser from 'body-parser';
 
 dotenv.config();
 
 const app = express();
+// Utilisation de body-parser pour parser les requêtes JSON
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+
+app.use('/users', router);
+app.use('/api', recetteRoutes);
+
 const PORT = process.env.PORT || 4000;
-
-app.use(express.json()); 
-//app.use('/api/users', userRoutes); // Routes pour les utilisateurs
-//app.use('/api/recipes', recipeRoutes); // Routes pour les recettes
-
-// Démarrage du serveur
 app.listen(PORT, () => {
-  console.log(`Serveur en cours d'exécution sur le port ${PORT}`);
+  console.log(`le serveur demarre sur le port ${PORT}`);
 });
