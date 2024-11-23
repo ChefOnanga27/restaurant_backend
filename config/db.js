@@ -1,18 +1,21 @@
-import mysql from "mysql2";
+import mysql from 'mysql2';
+import dotenv from 'dotenv';
 
-// creation de la base donnee
+dotenv.config();
 
 const db = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "3306",
-    database: "lecosmos"
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
 });
 
-
-db.connect(error => {
-  if (error) throw error;
-  console.log(" Connecté à  la base de donnée.");
+db.connect((err) => {
+  if (err) {
+    console.error('Erreur de connexion à la base de données:', err);
+    process.exit(1);
+  }
+  console.log('Connexion réussie à la base de données');
 });
 
 export default db;
