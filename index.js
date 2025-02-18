@@ -1,6 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import cors from'cors';
+import cors from 'cors';
 import sequelize from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import recipeRoutes from './routes/recipeRoutes.js';
@@ -11,16 +11,23 @@ const app = express();
 
 // Configuration de CORS
 app.use(cors({
-  origin: '*', // Autorise toutes les origines (⚠️ à limiter en production)
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Méthodes HTTP autorisées
-  allowedHeaders: ['Content-Type', 'Authorization'] // Headers autorisés
+  origin: '*', // Autorise toutes les origines
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+// Middleware JSON
 app.use(express.json());
 
+// Routes
 app.use('/auth', authRoutes);
 app.use('/recipes', recipeRoutes);
 app.use('/comments', commentRoutes);
 
-sequelize.sync().then(() => console.log("Base de données synchronisée"));
+// Synchronisation de la base de données avec Sequelize
+sequelize.sync({ force: false }) // Ne pas supprimer les tables à chaque lancement
+  .then(() => console.log("Base de données synchronisée"));
 
-app.listen(8000, () => console.log("Serveur démarré sur le port 5000"));
+// Port dynamique
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, () => console.log(`Serveur démarré sur le port ${PORT}`));
