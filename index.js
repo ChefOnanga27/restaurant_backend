@@ -16,6 +16,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'] // Headers autorisés
 }));
 app.use(express.json());
+app.use(express.static('public'));
 
 app.use('/auth', authRoutes);
 app.use('/recipes', recipeRoutes);
