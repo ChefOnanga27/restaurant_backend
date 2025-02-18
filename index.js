@@ -1,21 +1,26 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import router from './routes/usersRoutes.js';
-import recetteRoutes from './routes/recetteRoutes.js'
-import bodyParser from 'body-parser';
+import cors from'cors';
+import sequelize from './config/db.js';
+import authRoutes from './routes/authRoutes.js';
+import recipeRoutes from './routes/recipeRoutes.js';
+import commentRoutes from './routes/commentRoutes.js';
 
 dotenv.config();
-
 const app = express();
-// Utilisation de body-parser pour parser les requêtes JSON
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
+// Configuration de CORS
+app.use(cors({
+  origin: '*', // Autorise toutes les origines (⚠️ à limiter en production)
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Méthodes HTTP autorisées
+  allowedHeaders: ['Content-Type', 'Authorization'] // Headers autorisés
+}));
+app.use(express.json());
 
-app.use('/users', router);
-app.use('/api', recetteRoutes);
+app.use('/auth', authRoutes);
+app.use('/recipes', recipeRoutes);
+app.use('/comments', commentRoutes);
 
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`le serveur demarre sur le port ${PORT}`);
-});
+sequelize.sync().then(() => console.log("Base de données synchronisée"));
+
+app.listen(5000, () => console.log("Serveur démarré sur le port 5000"));
