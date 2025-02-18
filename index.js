@@ -16,7 +16,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'] // Headers autorisés
 }));
 app.use(express.json());
-app.use(express.static('public'));
 
 app.use('/auth', authRoutes);
 app.use('/recipes', recipeRoutes);
@@ -24,4 +23,4 @@ app.use('/comments', commentRoutes);
 
 sequelize.sync().then(() => console.log("Base de données synchronisée"));
 
-app.listen(5000, () => console.log("Serveur démarré sur le port 5000"));
+app.listen(8000, () => console.log("Serveur démarré sur le port 5000"));
