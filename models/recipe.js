@@ -28,10 +28,6 @@ const Recipe = sequelize.define('Recipe', {
     type: DataTypes.STRING,  // Stocke l'URL de l'image
     allowNull: true
   },
-  videoUrl: {
-    type: DataTypes.STRING,  // Stocke l'URL de la vidéo
-    allowNull: true
-  },
   userId: {
     type: DataTypes.INTEGER,
     allowNull: false,
