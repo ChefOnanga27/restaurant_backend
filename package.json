@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon",
+    "build": "echo 'No build step needed for Express'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
